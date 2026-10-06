@@ -48,7 +48,15 @@ export class RemnawaveClient {
             }
             throw new Error(`Remnawave API error: ${errorMessage}`);
         }
-        return res.json() as Promise<T>;
+        const text = await res.text();
+        if (!text.trim()) {
+            return { success: true } as T;
+        }
+        try {
+            return JSON.parse(text) as T;
+        } catch {
+            return { success: true, response: text } as T;
+        }
     }
 
     private async get<T = unknown>(path: string): Promise<T> {
