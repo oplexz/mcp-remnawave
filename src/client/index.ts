@@ -278,6 +278,10 @@ export class RemnawaveClient {
         return this.patch(REST_API.HOSTS.BULK.UPDATE, params);
     }
 
+    async reorderHosts(params: Record<string, unknown>) {
+        return this.post(REST_API.HOSTS.ACTIONS.REORDER, params);
+    }
+
     // System
 
     async getStats() {

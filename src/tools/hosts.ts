@@ -193,6 +193,22 @@ export function registerHostTools(server: McpServer, client: RemnawaveClient, re
     );
 
     server.tool(
+        'hosts_reorder',
+        'Reorder hosts',
+        {
+            hosts: z
+                .array(z.object({
+                    viewPosition: z.number().int().describe('Sort position'),
+                    uuid: z.string().describe('Host UUID'),
+                }))
+                .describe('Array of { viewPosition, uuid }'),
+        },
+        async (params) => {
+            try { return toolResult(await client.reorderHosts(params)); } catch (e) { return toolError(e); }
+        },
+    );
+
+    server.tool(
         'hosts_bulk_enable',
         'Bulk enable selected hosts',
         { uuids: z.array(z.string()).describe('Array of host UUIDs') },
@@ -216,6 +232,21 @@ export function registerHostTools(server: McpServer, client: RemnawaveClient, re
         { uuids: z.array(z.string()).describe('Array of host UUIDs') },
         async (params) => {
             try { return toolResult(await client.bulkDeleteHosts(params)); } catch (e) { return toolError(e); }
+        },
+    );
+
+    server.tool(
+        'hosts_bulk_update',
+        'Bulk update selected hosts: the same provided fields are applied to every host in uuids',
+        {
+            uuids: z.array(z.string()).min(1).describe('Array of host UUIDs'),
+            remark: z.string().optional().describe('New remark/name'),
+            address: z.string().optional().describe('New address'),
+            port: z.number().int().optional().describe('New port'),
+            ...hostFields,
+        },
+        async (params) => {
+            try { return toolResult(await client.bulkUpdateHosts(buildHostBody(params))); } catch (e) { return toolError(e); }
         },
     );
 
