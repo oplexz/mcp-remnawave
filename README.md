@@ -10,14 +10,14 @@
 
 MCP server ([Model Context Protocol](https://modelcontextprotocol.io)) providing LLM clients (Claude Desktop, Cursor, Windsurf, etc.) with tools to manage a [Remnawave](https://github.com/remnawave/) VPN panel.
 
-**Version:** 1.2.0 | **Remnawave API:** 2.7.4
+**Version:** 1.2.0 | **Remnawave API:** 3.4.x
 
 ### Features
 
-- **153 tools** — full management of users, nodes, hosts, subscriptions, squads, HWID, config profiles, inbounds, API tokens, billing, snippets, external squads, settings, subscription page configs, node plugins, IP control, and metadata
+- **161 tools** — full management of users, nodes, hosts, subscriptions, squads, HWID, config profiles, inbounds, API tokens, billing, snippets, external squads, settings, subscription settings & response rules, subscription templates, subscription page configs, node plugins, IP control, and metadata
 - **3 resources** — real-time panel stats, node status, health checks
 - **5 prompts** — guided workflows for common tasks
-- **Readonly mode** — restrict to 69 read-only tools for safe monitoring
+- **Readonly mode** — restrict to 68 read-only tools for safe monitoring
 - **Caddy support** — `X-Api-Key` header for panels behind Caddy with custom path
 - **Type-safe** — built on [@remnawave/backend-contract](https://www.npmjs.com/package/@remnawave/backend-contract) for API route validation
 - **stdio transport** — works with Claude Desktop, Cursor, Windsurf, and any MCP-compatible client
@@ -69,11 +69,11 @@ Set `REMNAWAVE_READONLY=true` to disable all write operations (create, update, d
 
 Useful for monitoring dashboards or shared environments where you want to prevent accidental changes.
 
-In readonly mode, the available tools are reduced from 153 to 69:
+In readonly mode, the available tools are reduced from 161 to 68:
 
 | Category | Available tools |
 |----------|----------------|
-| Users (10) | `users_list`, `users_get`, `users_get_by_username`, `users_get_by_short_uuid`, `users_get_by_telegram_id`, `users_get_by_email`, `users_get_by_tag`, `users_get_by_subscription_uuid`, `users_tags_list`, `users_resolve` |
+| Users (6) | `users_list`, `users_get`, `users_get_by_username`, `users_get_by_short_uuid`, `users_tags_list`, `users_resolve` |
 | Nodes (3) | `nodes_list`, `nodes_get`, `nodes_tags_list` |
 | Hosts (3) | `hosts_list`, `hosts_get`, `hosts_tags_list` |
 | System (10) | all tools (read-only by nature) |
@@ -86,7 +86,8 @@ In readonly mode, the available tools are reduced from 153 to 69:
 | Infra Billing (4) | `billing_providers_list`, `billing_provider_get`, `billing_nodes_list`, `billing_history_list` |
 | Snippets (1) | `snippets_list` |
 | External Squads (2) | `external_squads_list`, `external_squads_get` |
-| Settings (1) | `settings_get` |
+| Settings (2) | `settings_get`, `subscription_settings_get` |
+| Subscription Templates (2) | `subscription_templates_list`, `subscription_templates_get` |
 | Sub Page Configs (2) | `sub_page_configs_list`, `sub_page_configs_get` |
 | Node Plugins (4) | `node_plugins_list`, `node_plugins_get`, `node_plugins_torrent_reports`, `node_plugins_torrent_stats` |
 | IP Control (4) | `ip_control_fetch_ips`, `ip_control_get_fetch_ips_result`, `ip_control_fetch_users_ips`, `ip_control_get_fetch_users_ips_result` |
@@ -145,18 +146,14 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 
 ### Available Tools
 
-#### Users (27 tools)
+#### Users (23 tools)
 
 | Tool | Description | Mode |
 |------|-------------|------|
 | `users_list` | List all users with pagination | read |
-| `users_get` | Get user by UUID | read |
+| `users_get` | Get user by numeric ID | read |
 | `users_get_by_username` | Get user by username | read |
 | `users_get_by_short_uuid` | Get user by short UUID | read |
-| `users_get_by_telegram_id` | Get user by Telegram ID | read |
-| `users_get_by_email` | Get user by email | read |
-| `users_get_by_tag` | Get user by tag | read |
-| `users_get_by_subscription_uuid` | Get user by subscription UUID | read |
 | `users_tags_list` | List all user tags | read |
 | `users_resolve` | Resolve users by multiple criteria | read |
 | `users_create` | Create a new user | write |
@@ -197,7 +194,7 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `nodes_bulk_actions` | Bulk node actions | write |
 | `nodes_bulk_update` | Bulk update nodes | write |
 
-#### Hosts (11 tools)
+#### Hosts (13 tools)
 
 | Tool | Description | Mode |
 |------|-------------|------|
@@ -210,6 +207,8 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `hosts_bulk_enable` | Bulk enable hosts | write |
 | `hosts_bulk_disable` | Bulk disable hosts | write |
 | `hosts_bulk_delete` | Bulk delete hosts | write |
+| `hosts_reorder` | Reorder hosts | write |
+| `hosts_bulk_update` | Bulk update any host fields | write |
 | `hosts_bulk_set_inbound` | Bulk set host inbound | write |
 | `hosts_bulk_set_port` | Bulk set host port | write |
 
@@ -233,7 +232,7 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | Tool | Description | Mode |
 |------|-------------|------|
 | `subscriptions_list` | List all subscriptions | read |
-| `subscriptions_get_by_uuid` | Get subscription by UUID | read |
+| `subscriptions_get_by_user_id` | Get subscription by numeric user ID | read |
 | `subscriptions_get_by_username` | Get subscription by username | read |
 | `subscriptions_get_by_short_uuid` | Get subscription by short UUID | read |
 | `subscriptions_get_raw_by_short_uuid` | Get raw subscription by short UUID | read |
@@ -257,7 +256,7 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `config_profiles_delete` | Delete config profile | write |
 | `config_profiles_reorder` | Reorder config profiles | write |
 
-#### Internal Squads (7 tools)
+#### Internal Squads (9 tools)
 
 | Tool | Description | Mode |
 |------|-------------|------|
@@ -268,6 +267,8 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `squads_delete` | Delete a squad | write |
 | `squads_add_users` | Add users to a squad | write |
 | `squads_remove_users` | Remove users from a squad | write |
+| `squads_add_all_users` | Add ALL users to a squad | write |
+| `squads_remove_all_users` | Remove ALL users from a squad | write |
 
 #### HWID Devices (7 tools)
 
@@ -330,16 +331,29 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `external_squads_create` | Create external squad | write |
 | `external_squads_update` | Update external squad | write |
 | `external_squads_delete` | Delete external squad | write |
-| `external_squads_add_users` | Add users to external squad | write |
-| `external_squads_remove_users` | Remove users from external squad | write |
+| `external_squads_add_all_users` | Add ALL users to external squad | write |
+| `external_squads_remove_all_users` | Remove ALL users from external squad | write |
 | `external_squads_reorder` | Reorder external squads | write |
 
-#### Settings (2 tools)
+#### Settings (4 tools)
 
 | Tool | Description | Mode |
 |------|-------------|------|
 | `settings_get` | Get panel settings | read |
 | `settings_update` | Update panel settings | write |
+| `subscription_settings_get` | Get subscription settings (response rules, remarks, headers, HWID) | read |
+| `subscription_settings_update` | Update subscription settings / response rules | write |
+
+#### Subscription Templates (6 tools)
+
+| Tool | Description | Mode |
+|------|-------------|------|
+| `subscription_templates_list` | List subscription templates | read |
+| `subscription_templates_get` | Get template (YAML decoded into `templateYaml`) | read |
+| `subscription_templates_create` | Create template (name + type) | write |
+| `subscription_templates_update` | Update template body (`templateYaml` or `templateJson`) | write |
+| `subscription_templates_delete` | Delete template | write |
+| `subscription_templates_reorder` | Reorder templates | write |
 
 #### Subscription Page Configs (7 tools)
 
@@ -445,6 +459,7 @@ src/
 │   ├── node-plugins.ts            # Node plugins (11 tools)
 │   ├── external-squads.ts         # External squads (8 tools)
 │   ├── subscription-page-configs.ts # Subscription page configs (7 tools)
+│   ├── subscription-templates.ts # Subscription templates (6 tools)
 │   ├── ip-control.ts              # IP control (5 tools)
 │   ├── snippets.ts                # Snippets (4 tools)
 │   ├── metadata.ts                # Node & user metadata (4 tools)
@@ -469,14 +484,14 @@ MIT
 
 MCP-сервер ([Model Context Protocol](https://modelcontextprotocol.io)), предоставляющий LLM-клиентам (Claude Desktop, Cursor, Windsurf и др.) инструменты для управления VPN-панелью [Remnawave](https://github.com/remnawave/).
 
-**Версия:** 1.2.0 | **Remnawave API:** 2.7.4
+**Версия:** 1.2.0 | **Remnawave API:** 3.4.x
 
 ### Возможности
 
-- **153 инструмента** — полное управление пользователями, нодами, хостами, подписками, группами, HWID, конфиг-профилями, inbounds, API-токенами, биллингом, сниппетами, внешними группами, настройками, страницами подписок, плагинами нод, IP-контролем и метаданными
+- **161 инструмент** — полное управление пользователями, нодами, хостами, подписками, группами, HWID, конфиг-профилями, inbounds, API-токенами, биллингом, сниппетами, внешними группами, настройками, настройками подписок и response rules, шаблонами подписок, страницами подписок, плагинами нод, IP-контролем и метаданными
 - **3 ресурса** — статистика панели, статус нод, проверка здоровья в реальном времени
 - **5 промптов** — пошаговые сценарии для типичных задач
-- **Readonly-режим** — ограничение до 69 инструментов только для чтения
+- **Readonly-режим** — ограничение до 68 инструментов только для чтения
 - **Поддержка Caddy** — заголовок `X-Api-Key` для панелей за Caddy с кастомным путём
 - **Type-safe** — построен на [@remnawave/backend-contract](https://www.npmjs.com/package/@remnawave/backend-contract) для валидации API-маршрутов
 - **stdio транспорт** — работает с Claude Desktop, Cursor, Windsurf и любым MCP-совместимым клиентом
@@ -528,11 +543,11 @@ REMNAWAVE_API_KEY=ваш-caddy-api-ключ
 
 Полезно для мониторинговых дашбордов или общих окружений, где нужно исключить случайные изменения.
 
-В readonly-режиме количество доступных инструментов сокращается с 153 до 69:
+В readonly-режиме количество доступных инструментов сокращается с 161 до 68:
 
 | Категория | Доступные инструменты |
 |-----------|----------------------|
-| Пользователи (10) | `users_list`, `users_get`, `users_get_by_username`, `users_get_by_short_uuid`, `users_get_by_telegram_id`, `users_get_by_email`, `users_get_by_tag`, `users_get_by_subscription_uuid`, `users_tags_list`, `users_resolve` |
+| Пользователи (6) | `users_list`, `users_get`, `users_get_by_username`, `users_get_by_short_uuid`, `users_tags_list`, `users_resolve` |
 | Ноды (3) | `nodes_list`, `nodes_get`, `nodes_tags_list` |
 | Хосты (3) | `hosts_list`, `hosts_get`, `hosts_tags_list` |
 | Система (10) | все инструменты (только чтение по природе) |
@@ -545,7 +560,8 @@ REMNAWAVE_API_KEY=ваш-caddy-api-ключ
 | Биллинг (4) | `billing_providers_list`, `billing_provider_get`, `billing_nodes_list`, `billing_history_list` |
 | Сниппеты (1) | `snippets_list` |
 | Внешние группы (2) | `external_squads_list`, `external_squads_get` |
-| Настройки (1) | `settings_get` |
+| Настройки (2) | `settings_get`, `subscription_settings_get` |
+| Шаблоны подписок (2) | `subscription_templates_list`, `subscription_templates_get` |
 | Страницы подписок (2) | `sub_page_configs_list`, `sub_page_configs_get` |
 | Плагины нод (4) | `node_plugins_list`, `node_plugins_get`, `node_plugins_torrent_reports`, `node_plugins_torrent_stats` |
 | IP-контроль (4) | `ip_control_fetch_ips`, `ip_control_get_fetch_ips_result`, `ip_control_fetch_users_ips`, `ip_control_get_fetch_users_ips_result` |
@@ -604,18 +620,14 @@ docker compose up -d
 
 ### Доступные инструменты
 
-#### Пользователи (27 инструментов)
+#### Пользователи (23 инструмента)
 
 | Инструмент | Описание | Режим |
 |------------|----------|-------|
 | `users_list` | Список пользователей с пагинацией | read |
-| `users_get` | Получить пользователя по UUID | read |
+| `users_get` | Получить пользователя по числовому ID | read |
 | `users_get_by_username` | Получить пользователя по username | read |
 | `users_get_by_short_uuid` | Получить пользователя по short UUID | read |
-| `users_get_by_telegram_id` | Получить пользователя по Telegram ID | read |
-| `users_get_by_email` | Получить пользователя по email | read |
-| `users_get_by_tag` | Получить пользователя по тегу | read |
-| `users_get_by_subscription_uuid` | Получить пользователя по UUID подписки | read |
 | `users_tags_list` | Список тегов пользователей | read |
 | `users_resolve` | Поиск пользователей по нескольким критериям | read |
 | `users_create` | Создать нового пользователя | write |
@@ -656,7 +668,7 @@ docker compose up -d
 | `nodes_bulk_actions` | Массовые действия с нодами | write |
 | `nodes_bulk_update` | Массовое обновление нод | write |
 
-#### Хосты (11 инструментов)
+#### Хосты (13 инструментов)
 
 | Инструмент | Описание | Режим |
 |------------|----------|-------|
@@ -669,6 +681,8 @@ docker compose up -d
 | `hosts_bulk_enable` | Массовое включение хостов | write |
 | `hosts_bulk_disable` | Массовое отключение хостов | write |
 | `hosts_bulk_delete` | Массовое удаление хостов | write |
+| `hosts_reorder` | Изменить порядок хостов | write |
+| `hosts_bulk_update` | Массовое обновление полей хостов | write |
 | `hosts_bulk_set_inbound` | Массовая установка inbound | write |
 | `hosts_bulk_set_port` | Массовая установка порта | write |
 
@@ -692,7 +706,7 @@ docker compose up -d
 | Инструмент | Описание | Режим |
 |------------|----------|-------|
 | `subscriptions_list` | Список всех подписок | read |
-| `subscriptions_get_by_uuid` | Подписка по UUID | read |
+| `subscriptions_get_by_user_id` | Подписка по числовому ID пользователя | read |
 | `subscriptions_get_by_username` | Подписка по username | read |
 | `subscriptions_get_by_short_uuid` | Подписка по short UUID | read |
 | `subscriptions_get_raw_by_short_uuid` | Сырая подписка по short UUID | read |
@@ -716,7 +730,7 @@ docker compose up -d
 | `config_profiles_delete` | Удалить конфиг-профиль | write |
 | `config_profiles_reorder` | Переупорядочить конфиг-профили | write |
 
-#### Внутренние группы (7 инструментов)
+#### Внутренние группы (9 инструментов)
 
 | Инструмент | Описание | Режим |
 |------------|----------|-------|
@@ -727,6 +741,8 @@ docker compose up -d
 | `squads_delete` | Удалить группу | write |
 | `squads_add_users` | Добавить пользователей в группу | write |
 | `squads_remove_users` | Убрать пользователей из группы | write |
+| `squads_add_all_users` | Добавить ВСЕХ пользователей в группу | write |
+| `squads_remove_all_users` | Убрать ВСЕХ пользователей из группы | write |
 
 #### HWID-устройства (7 инструментов)
 
@@ -789,16 +805,29 @@ docker compose up -d
 | `external_squads_create` | Создать внешнюю группу | write |
 | `external_squads_update` | Обновить внешнюю группу | write |
 | `external_squads_delete` | Удалить внешнюю группу | write |
-| `external_squads_add_users` | Добавить пользователей | write |
-| `external_squads_remove_users` | Убрать пользователей | write |
+| `external_squads_add_all_users` | Добавить ВСЕХ пользователей | write |
+| `external_squads_remove_all_users` | Убрать ВСЕХ пользователей | write |
 | `external_squads_reorder` | Переупорядочить | write |
 
-#### Настройки (2 инструмента)
+#### Настройки (4 инструмента)
 
 | Инструмент | Описание | Режим |
 |------------|----------|-------|
 | `settings_get` | Получить настройки панели | read |
 | `settings_update` | Обновить настройки панели | write |
+| `subscription_settings_get` | Настройки подписок (response rules, ремарки, заголовки, HWID) | read |
+| `subscription_settings_update` | Обновить настройки подписок / response rules | write |
+
+#### Шаблоны подписок (6 инструментов)
+
+| Инструмент | Описание | Режим |
+|------------|----------|-------|
+| `subscription_templates_list` | Список шаблонов подписок | read |
+| `subscription_templates_get` | Получить шаблон (YAML декодируется в `templateYaml`) | read |
+| `subscription_templates_create` | Создать шаблон (имя + тип) | write |
+| `subscription_templates_update` | Обновить тело шаблона (`templateYaml` или `templateJson`) | write |
+| `subscription_templates_delete` | Удалить шаблон | write |
+| `subscription_templates_reorder` | Изменить порядок шаблонов | write |
 
 #### Страницы подписок (7 инструментов)
 
@@ -904,6 +933,7 @@ src/
 │   ├── node-plugins.ts            # Плагины нод (11)
 │   ├── external-squads.ts         # Внешние группы (8)
 │   ├── subscription-page-configs.ts # Страницы подписок (7)
+│   ├── subscription-templates.ts # Шаблоны подписок (6)
 │   ├── ip-control.ts              # IP-контроль (5)
 │   ├── snippets.ts                # Сниппеты (4)
 │   ├── metadata.ts                # Метаданные нод и пользователей (4)
