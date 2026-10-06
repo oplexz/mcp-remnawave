@@ -634,6 +634,32 @@ export class RemnawaveClient {
         return this.patch(REST_API.REMNAAWAVE_SETTINGS.UPDATE, params);
     }
 
+    // Subscription Templates
+
+    async getSubscriptionTemplates() {
+        return this.get(REST_API.SUBSCRIPTION_TEMPLATE.GET_ALL);
+    }
+
+    async getSubscriptionTemplate(uuid: string) {
+        return this.get(REST_API.SUBSCRIPTION_TEMPLATE.GET(uuid));
+    }
+
+    async createSubscriptionTemplate(params: Record<string, unknown>) {
+        return this.post(REST_API.SUBSCRIPTION_TEMPLATE.CREATE, params);
+    }
+
+    async updateSubscriptionTemplate(params: Record<string, unknown>) {
+        return this.patch(REST_API.SUBSCRIPTION_TEMPLATE.UPDATE, params);
+    }
+
+    async deleteSubscriptionTemplate(uuid: string) {
+        return this.delete(REST_API.SUBSCRIPTION_TEMPLATE.DELETE(uuid));
+    }
+
+    async reorderSubscriptionTemplates(params: Record<string, unknown>) {
+        return this.post(REST_API.SUBSCRIPTION_TEMPLATE.ACTIONS.REORDER, params);
+    }
+
     // Subscription Settings (response rules, custom remarks, headers, HWID)
 
     async getSubscriptionSettings() {
