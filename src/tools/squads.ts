@@ -138,4 +138,22 @@ export function registerSquadTools(
             }
         },
     );
+
+    server.tool(
+        'squads_add_all_users',
+        'Add ALL users to an internal squad',
+        { squadUuid: z.string().describe('Squad UUID') },
+        async ({ squadUuid }) => {
+            try { return toolResult(await client.addAllUsersToSquad(squadUuid)); } catch (e) { return toolError(e); }
+        },
+    );
+
+    server.tool(
+        'squads_remove_all_users',
+        'Remove ALL users from an internal squad',
+        { squadUuid: z.string().describe('Squad UUID') },
+        async ({ squadUuid }) => {
+            try { return toolResult(await client.removeAllUsersFromSquad(squadUuid)); } catch (e) { return toolError(e); }
+        },
+    );
 }

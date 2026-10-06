@@ -439,6 +439,14 @@ export class RemnawaveClient {
         );
     }
 
+    async addAllUsersToSquad(squadUuid: string) {
+        return this.post(REST_API.INTERNAL_SQUADS.BULK_ACTIONS.ADD_USERS(squadUuid));
+    }
+
+    async removeAllUsersFromSquad(squadUuid: string) {
+        return this.delete(REST_API.INTERNAL_SQUADS.BULK_ACTIONS.REMOVE_USERS(squadUuid));
+    }
+
     // HWID
 
     async getUserHwidDevices(userId: number) {
