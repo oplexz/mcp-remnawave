@@ -311,11 +311,11 @@ export function registerNodeTools(server: McpServer, client: RemnawaveClient, re
 
     server.tool(
         'nodes_bulk_profile_modification',
-        'Bulk modify config profile for selected nodes',
+        'Set the active config profile and active inbounds on selected nodes. activeInbounds replaces the current set. Restarts Xray on the affected nodes and briefly drops connected users.',
         {
-            uuids: z.array(z.string()).describe('Array of node UUIDs'),
+            uuids: z.array(z.string()).min(1).describe('Array of node UUIDs'),
             configProfileUuid: z.string().describe('New config profile UUID'),
-            activeInbounds: z.array(z.string()).describe('Array of inbound UUIDs to enable'),
+            activeInbounds: z.array(z.string()).min(1).describe('Full array of inbound UUIDs to activate'),
         },
         async (params) => {
             try {
@@ -355,17 +355,22 @@ export function registerNodeTools(server: McpServer, client: RemnawaveClient, re
         'nodes_bulk_update',
         'Bulk update properties for selected nodes',
         {
-            uuids: z.array(z.string()).describe('Array of node UUIDs'),
-            countryCode: z.string().optional().describe('New country code'),
-            consumptionMultiplier: z.number().optional().describe('New consumption multiplier'),
-            providerUuid: z.string().optional().describe('Infra provider UUID'),
-            tags: z.array(z.string()).optional().describe('Node tags'),
-            activePluginUuid: z.string().optional().describe('Active plugin UUID'),
+            uuids: z.array(z.string()).min(1).describe('Array of node UUIDs'),
+            countryCode: nodeFields.countryCode,
+            consumptionMultiplier: nodeFields.consumptionMultiplier,
+            nodeConsumptionMultiplier: nodeFields.nodeConsumptionMultiplier,
+            providerUuid: nodeFields.providerUuid,
+            tags: nodeFields.tags,
+            activePluginUuid: nodeFields.activePluginUuid,
+            integrationUuids: nodeFields.integrationUuids,
+            note: nodeFields.note,
         },
-        async (params) => {
+        async ({ uuids, ...fields }) => {
             try {
-                const { uuids, ...fields } = params;
-                const result = await client.bulkUpdateNodes({ uuids, fields });
+                const result = await client.bulkUpdateNodes({
+                    uuids,
+                    fields: stripUndefined(fields),
+                });
                 return toolResult(result);
             } catch (e) {
                 return toolError(e);
