@@ -6,7 +6,7 @@ import { toolResult, toolError } from './helpers.js';
 const SUBSCRIPTION_TYPES = ['XRAY_JSON', 'XRAY_BASE64', 'MIHOMO', 'STASH', 'CLASH', 'SINGBOX'] as const;
 const ALPN_VALUES = ['h3', 'h2', 'http/1.1', 'h2,http/1.1', 'h3,h2,http/1.1', 'h3,h2'] as const;
 const MIHOMO_IP_VERSIONS = ['dual', 'ipv4', 'ipv6', 'ipv4-prefer', 'ipv6-prefer'] as const;
-const jsonObject = z.record(z.unknown());
+const jsonObject = () => z.record(z.unknown());
 
 // Fields shared by create / update / bulk update, matching
 // CreateHostCommand / UpdateHostCommand in @remnawave/backend-contract 3.4.x.
@@ -32,10 +32,10 @@ const hostFields = {
     isDisabled: z.boolean().optional().describe('Disabled state'),
     isHidden: z.boolean().optional().describe('Hide host from subscriptions'),
     securityLayer: z.enum(['DEFAULT', 'TLS', 'NONE']).optional().describe('Security layer'),
-    xhttpExtraParams: jsonObject.nullable().optional().describe('XHTTP extra params (JSON object)'),
-    muxParams: jsonObject.nullable().optional().describe('Mux params (JSON object)'),
-    sockoptParams: jsonObject.nullable().optional().describe('Sockopt params (JSON object)'),
-    finalMask: jsonObject.nullable().optional().describe('Final mask (JSON object)'),
+    xhttpExtraParams: jsonObject().nullable().optional().describe('XHTTP extra params (JSON object)'),
+    muxParams: jsonObject().nullable().optional().describe('Mux params (JSON object)'),
+    sockoptParams: jsonObject().nullable().optional().describe('Sockopt params (JSON object)'),
+    finalMask: jsonObject().nullable().optional().describe('Final mask (JSON object)'),
     serverDescription: z.string().max(30).nullable().optional().describe('Server description (max 30 chars)'),
     tags: z
         .array(z.string())
@@ -65,7 +65,7 @@ const hostFields = {
         })
         .optional()
         .describe('Internal squad filtering. Use { mode: "EXCLUDE", squads: [] } to disable filtering'),
-    mapper: jsonObject
+    mapper: jsonObject()
         .optional()
         .describe('Host mapper: { xrayJson?, mihomo?, base64?, singbox? } - each an array of ops like { op: "set", to, value } | { op: "copy", from, to } | { op: "unset", to }'),
 };
