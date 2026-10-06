@@ -59,10 +59,11 @@ export function registerSquadTools(
 
     server.tool(
         'squads_update',
-        'Update an internal squad',
+        'Update an internal squad. `inbounds` REPLACES the squad\'s inbound set: fetch the current list with squads_list and send the full array.',
         {
             uuid: z.string().describe('Squad UUID'),
             name: z.string().optional().describe('New squad name'),
+            inbounds: z.array(z.string()).optional().describe('Full array of inbound UUIDs (replaces existing)'),
         },
         async (params) => {
             try {
