@@ -170,19 +170,22 @@ export function registerUserTools(server: McpServer, client: RemnawaveClient, re
                 .enum(['ACTIVE', 'DISABLED'])
                 .optional()
                 .describe('User status'),
-            description: z.string().optional().describe('User description'),
-            tag: z.string().optional().describe('User tag'),
-            telegramId: z.number().optional().describe('Telegram user ID'),
-            email: z.string().optional().describe('User email'),
+            description: z.string().nullable().optional().describe('User description (null to clear)'),
+            tag: z.string().nullable().optional().describe('User tag (null to clear)'),
+            telegramId: z.number().nullable().optional().describe('Telegram user ID (null to clear)'),
+            email: z.string().nullable().optional().describe('User email (null to clear)'),
             hwidDeviceLimit: z
                 .number()
+                .int()
+                .min(0)
+                .nullable()
                 .optional()
-                .describe('Max HWID devices'),
+                .describe('Max HWID devices (null to clear)'),
             activeInternalSquads: z
                 .array(z.string())
                 .optional()
                 .describe('Internal squad UUIDs'),
-            externalSquadUuid: z.string().optional().describe('External squad UUID'),
+            externalSquadUuid: z.string().nullable().optional().describe('External squad UUID (null to remove the user from their external squad)'),
         },
         async (params) => {
             try {
