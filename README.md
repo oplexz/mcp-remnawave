@@ -157,7 +157,7 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `users_tags_list` | List all user tags | read |
 | `users_resolve` | Resolve users by multiple criteria | read |
 | `users_create` | Create a new user | write |
-| `users_update` | Update user settings | write |
+| `users_update` | Update user settings (pass `null` to clear tag, description, email, Telegram ID, HWID limit or external squad) | write |
 | `users_delete` | Delete a user | write |
 | `users_enable` | Enable a disabled user | write |
 | `users_disable` | Disable a user | write |
@@ -181,8 +181,8 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `nodes_list` | List all nodes | read |
 | `nodes_get` | Get node by UUID | read |
 | `nodes_tags_list` | List all node tags | read |
-| `nodes_create` | Create a new node | write |
-| `nodes_update` | Update node settings | write |
+| `nodes_create` | Create a new node with its config profile and active inbounds | write |
+| `nodes_update` | Update node settings, tags, provider, multipliers; `configProfileUuid` + `activeInbounds` switch the active profile/inbounds (restarts Xray on the node) | write |
 | `nodes_delete` | Delete a node | write |
 | `nodes_enable` | Enable a node | write |
 | `nodes_disable` | Disable a node | write |
@@ -190,9 +190,9 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `nodes_restart_all` | Restart all nodes | write |
 | `nodes_reset_traffic` | Reset node traffic counter | write |
 | `nodes_reorder` | Reorder nodes | write |
-| `nodes_bulk_profile_modification` | Bulk modify node profiles | write |
+| `nodes_bulk_profile_modification` | Set active config profile and inbounds on several nodes (restarts Xray) | write |
 | `nodes_bulk_actions` | Bulk node actions | write |
-| `nodes_bulk_update` | Bulk update nodes | write |
+| `nodes_bulk_update` | Bulk update node country, multipliers, provider, tags, plugin, integrations, note | write |
 
 #### Hosts (13 tools)
 
@@ -263,7 +263,7 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 | `squads_list` | List all squads | read |
 | `squads_accessible_nodes` | Get squad accessible nodes | read |
 | `squads_create` | Create a squad | write |
-| `squads_update` | Update a squad | write |
+| `squads_update` | Update a squad's name or replace its inbound set | write |
 | `squads_delete` | Delete a squad | write |
 | `squads_add_users` | Add users to a squad | write |
 | `squads_remove_users` | Remove users from a squad | write |
@@ -427,6 +427,7 @@ Environment variables are passed via `.env` file or `docker-compose.yml`.
 "Show me all users with expired subscriptions"
 "Create user vasya with 50 GB limit for one month"
 "Restart node amsterdam-01"
+"Activate the new VLESS inbound on node amsterdam-01"
 "Give me a traffic report for the last week"
 "Disable users who exceeded their traffic limit"
 "Which nodes are offline right now?"
@@ -631,7 +632,7 @@ docker compose up -d
 | `users_tags_list` | Список тегов пользователей | read |
 | `users_resolve` | Поиск пользователей по нескольким критериям | read |
 | `users_create` | Создать нового пользователя | write |
-| `users_update` | Обновить настройки пользователя | write |
+| `users_update` | Обновить настройки пользователя (`null` очищает тег, описание, email, Telegram ID, лимит HWID или внешнюю группу) | write |
 | `users_delete` | Удалить пользователя | write |
 | `users_enable` | Включить пользователя | write |
 | `users_disable` | Отключить пользователя | write |
@@ -655,8 +656,8 @@ docker compose up -d
 | `nodes_list` | Список всех нод | read |
 | `nodes_get` | Получить ноду по UUID | read |
 | `nodes_tags_list` | Список тегов нод | read |
-| `nodes_create` | Создать новую ноду | write |
-| `nodes_update` | Обновить настройки ноды | write |
+| `nodes_create` | Создать новую ноду с профилем конфигурации и активными инбаундами | write |
+| `nodes_update` | Обновить настройки ноды, теги, провайдера, множители; `configProfileUuid` + `activeInbounds` меняют активный профиль/инбаунды (перезапускает Xray на ноде) | write |
 | `nodes_delete` | Удалить ноду | write |
 | `nodes_enable` | Включить ноду | write |
 | `nodes_disable` | Отключить ноду | write |
@@ -664,9 +665,9 @@ docker compose up -d
 | `nodes_restart_all` | Перезапустить все ноды | write |
 | `nodes_reset_traffic` | Сбросить трафик ноды | write |
 | `nodes_reorder` | Переупорядочить ноды | write |
-| `nodes_bulk_profile_modification` | Массовое изменение профилей нод | write |
+| `nodes_bulk_profile_modification` | Задать активный профиль и инбаунды для нескольких нод (перезапускает Xray) | write |
 | `nodes_bulk_actions` | Массовые действия с нодами | write |
-| `nodes_bulk_update` | Массовое обновление нод | write |
+| `nodes_bulk_update` | Массово обновить страну, множители, провайдера, теги, плагин, интеграции, заметку нод | write |
 
 #### Хосты (13 инструментов)
 
@@ -737,7 +738,7 @@ docker compose up -d
 | `squads_list` | Список групп | read |
 | `squads_accessible_nodes` | Доступные ноды группы | read |
 | `squads_create` | Создать группу | write |
-| `squads_update` | Обновить группу | write |
+| `squads_update` | Изменить имя группы или заменить её набор инбаундов | write |
 | `squads_delete` | Удалить группу | write |
 | `squads_add_users` | Добавить пользователей в группу | write |
 | `squads_remove_users` | Убрать пользователей из группы | write |
@@ -901,6 +902,7 @@ docker compose up -d
 «Покажи мне всех пользователей с истёкшей подпиской»
 «Создай пользователя vasya с лимитом 50 ГБ на месяц»
 «Перезапусти ноду amsterdam-01»
+«Активируй новый VLESS-инбаунд на ноде amsterdam-01»
 «Дай отчёт по трафику за последнюю неделю»
 «Отключи пользователей, которые превысили лимит трафика»
 «Какие ноды сейчас офлайн?»
