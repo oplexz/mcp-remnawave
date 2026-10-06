@@ -634,6 +634,16 @@ export class RemnawaveClient {
         return this.patch(REST_API.REMNAAWAVE_SETTINGS.UPDATE, params);
     }
 
+    // Subscription Settings (response rules, custom remarks, headers, HWID)
+
+    async getSubscriptionSettings() {
+        return this.get(REST_API.SUBSCRIPTION_SETTINGS.GET);
+    }
+
+    async updateSubscriptionSettings(params: Record<string, unknown>) {
+        return this.patch(REST_API.SUBSCRIPTION_SETTINGS.UPDATE, params);
+    }
+
     // Subscription Page Configs
 
     async getSubscriptionPageConfigs() {
