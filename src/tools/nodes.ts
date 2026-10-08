@@ -247,10 +247,15 @@ export function registerNodeTools(server: McpServer, client: RemnawaveClient, re
         'Restart a specific node',
         {
             uuid: z.string().describe('Node UUID'),
+            forceRestart: z
+                .boolean()
+                .optional()
+                .default(false)
+                .describe('Force an Xray restart even if the node config has not changed (default false)'),
         },
-        async ({ uuid }) => {
+        async ({ uuid, forceRestart }) => {
             try {
-                const result = await client.restartNode(uuid);
+                const result = await client.restartNode(uuid, forceRestart);
                 return toolResult(result);
             } catch (e) {
                 return toolError(e);
@@ -261,10 +266,16 @@ export function registerNodeTools(server: McpServer, client: RemnawaveClient, re
     server.tool(
         'nodes_restart_all',
         'Restart all nodes',
-        {},
-        async () => {
+        {
+            forceRestart: z
+                .boolean()
+                .optional()
+                .default(false)
+                .describe('Force an Xray restart even if the node config has not changed (default false)'),
+        },
+        async ({ forceRestart }) => {
             try {
-                const result = await client.restartAllNodes();
+                const result = await client.restartAllNodes(forceRestart);
                 return toolResult(result);
             } catch (e) {
                 return toolError(e);
